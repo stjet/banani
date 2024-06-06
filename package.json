@@ -1,0 +1,35 @@
+{
+  "name": "banani",
+  "version": "0.0.1-wip-1",
+  "description": "JS/TS library for the Banano cryptocurrency in the style of bananopie",
+  "main": "main.js",
+  "scripts": {
+    "compile": "tsc -p .",
+    "docs": "typedoc --name banani --entryPoints ./main.ts",
+    "browser": "esbuild browser-main.ts --bundle --minify --keep-names --outfile=banani-browser.js",
+    "build": "npm run compile && npm run docs && npm run browser"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stjet/banani.git"
+  },
+  "keywords": [
+    "banano",
+    "cryptocurrency"
+  ],
+  "author": "stjet",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/stjet/banani/issues"
+  },
+  "homepage": "https://github.com/stjet/banani#readme",
+  "devDependencies": {
+    "esbuild": "^0.21.4",
+    "typedoc": "^0.25.13",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "blake2b": "^2.1.4",
+    "tweetnacl": "^1.0.3"
+  }
+}

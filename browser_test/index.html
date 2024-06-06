@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Banani browser test</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <script src="../banani-browser.js"></script>
+  </head>
+  <body>
+    <p id="block-count"></p>
+    <input type="number" placeholder="Whole Bananos" oninput="unit_calc(event)" />
+    <p id="units"></p>
+    <script>
+      let rpc = new window.banani.RPC("https://kaliumapi.appditto.com/api");
+      console.log(rpc.rpc_url);
+      (async () => {
+        document.getElementById("block-count").textContent = JSON.stringify(await rpc.get_block_count());
+      })();
+      function unit_calc(event) {
+        const raw = window.banani.whole_to_raw(event.target.value)
+        document.getElementById("units").textContent = raw + "\n" + window.banani.raw_to_whole(raw);
+      }
+      let random_wallet = window.banani.Wallet.gen_random_wallet();
+      console.log(random_wallet.seed);
+      console.log(window.banani.get_private_key_from_seed(random_wallet.seed, 0));
+    </script>
+  </body>
+</html>

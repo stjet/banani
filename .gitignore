@@ -1,0 +1,4 @@
+node_modules
+*.js
+!node_test/index.js
+!banani-browser.js
