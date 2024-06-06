@@ -1,5 +1,0 @@
-export type Whole = `${number}.${number}`;
-
-export function whole_to_raw(whole: Whole) {
-  //
-}
