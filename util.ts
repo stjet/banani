@@ -1,5 +1,5 @@
-import * as nacl from "tweetnacl"; //currently unused
-import blake2b from "blake2b"; //currently unused
+import * as nacl from "./tweetnacl_mod";
+import blake2b from "blake2b";
 
 // byte related
 
@@ -16,8 +16,9 @@ export function uint8array_to_hex(uint8array: Uint8Array): string {
 
 //assumes the hex length is multiple of 2
 export function hex_to_uint8array(hex: string): Uint8Array {
-  let uint8array: Uint8Array = new Uint8Array(hex.length / 2);
-  for (let i = 0; i < hex.length / 2; i++) {
+  hex = hex.toUpperCase();
+  let uint8array: Uint8Array = new Uint8Array(Math.floor(hex.length / 2));
+  for (let i = 0; i < Math.floor(hex.length / 2); i++) {
     uint8array[i] = HEX_CHARS.indexOf(hex[i * 2]) * 16 + HEX_CHARS.indexOf(hex[i * 2 + 1]);
   }
   return uint8array;
@@ -84,7 +85,15 @@ export function raw_to_whole(raw: BigInt, decimals = BANANO_DECIMALS): Whole {
 
 export function get_private_key_from_seed(seed: string, index: number): string {
   //index is 4 bytes
-  return blake2b(32).update(hex_to_uint8array(seed)).update(int_to_uint8array(index, 4)).digest("hex")
+  return blake2b(32).update(hex_to_uint8array(seed)).update(int_to_uint8array(index, 4)).digest("hex");
+}
+
+export function a(b) {
+  return blake2b(64).update(b).digest();
+}
+
+export function get_public_key_from_private_key(private_key: string): string {
+  return uint8array_to_hex(nacl.sign.keyPair.fromSecretKey(hex_to_uint8array(private_key)).publicKey);
 }
 
 //

@@ -5,6 +5,7 @@
     <title>Banani browser test</title>
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <script src="../banani-browser.js"></script>
+    <script src="a.js"></script>
   </head>
   <body>
     <p id="block-count"></p>
@@ -21,8 +22,10 @@
         document.getElementById("units").textContent = raw + "\n" + window.banani.raw_to_whole(raw);
       }
       let random_wallet = window.banani.Wallet.gen_random_wallet();
-      console.log(random_wallet.seed);
-      console.log(window.banani.get_private_key_from_seed(random_wallet.seed, 0));
+      console.log("seed", random_wallet.seed);
+      let pk = window.banani.get_private_key_from_seed(random_wallet.seed, 0);
+      console.log("privkey", pk);
+      console.log("pubkey", window.banani.get_public_key_from_private_key(pk));
     </script>
   </body>
 </html>

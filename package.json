@@ -6,8 +6,9 @@
   "scripts": {
     "compile": "tsc -p .",
     "docs": "typedoc --name banani --entryPoints ./main.ts",
-    "browser": "esbuild browser-main.ts --bundle --minify --keep-names --outfile=banani-browser.js",
-    "build": "npm run compile && npm run docs && npm run browser"
+    "browser": "esbuild browser-main.ts --bundle --minify --keep-names --drop-labels=NODE --outfile=banani-browser.js",
+    "build": "npm run compile && npm run docs && npm run browser",
+    "cryptodiff": "diff tweetnacl_og.js tweetnacl_mod.js"
   },
   "repository": {
     "type": "git",
