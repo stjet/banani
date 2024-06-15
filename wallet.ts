@@ -1,11 +1,12 @@
 import * as util from "./util";
-import type { Address, Block, BlockSubtype, BlockHash } from "./rpc_types";
+import type { AccountInfoRPC, Address, Block, BlockNoSignature, BlockSubtype, BlockHash } from "./rpc_types";
 import type { RPCInterface, RPC } from "./rpc";
 
 /** Wallets are created from seeds, so they can have multiple addresses by changing the index. Use Wallets to "write" (send, receive, change rep) to the network */
 export class Wallet {
   readonly seed: string;
   readonly rpc: RPCInterface;
+  /** Seed index. Seeds can have multiple private keys and addresses */
   index: number;
 
   try_work: boolean;
@@ -28,13 +29,14 @@ export class Wallet {
   }
 
   //Own properties
+  get private_key(): string {
+    return util.get_private_key_from_seed(this.seed, this.index);
+  }
   get public_key(): string {
-    //
-    return "placeholder";
+    return util.get_public_key_from_private_key(this.private_key);
   }
   get address(): Address {
-    //
-    return "ban_placeholder";
+    return util.get_address_from_public_key(this.public_key);
   }
 
   //Actions
@@ -48,8 +50,44 @@ export class Wallet {
     })).hash as BlockHash;
   }
   //send, send_all, receive, receive_all, change_representative, sign_message_in_dummy_block
+  //todo, work = true means generate work locally
+  /**
+   * @param {string} [work] optionally provide work
+   * @param {string} [previous] optionally provide a previous if you do not want to use the current frontier
+   * @param {string} [representative] optionally provide a representative if you do not want to use the current representative
+  */
+  async send(to: Address, amount: util.Whole, work?: string, previous?: BlockHash, representative?: Address): Promise<BlockHash> {
+    let raw_send = util.whole_to_raw(amount);
+    let info = await this.get_account_info();
+    let pub_receive = util.get_public_key_from_address(to);
+    let bprevious: BlockHash = previous;
+    if (!previous) bprevious = info.frontier;
+    let brepresentative = representative;
+    if (!representative) brepresentative = info.representative;
+    let before_balance = BigInt(info.balance);
+    let new_balance = before_balance - raw_send;
+    if (new_balance < 0n) {
+      throw Error(`Insufficient funds to send. Cannot send more than balance; ie, Before balance (raw: ${before_balance}) less than send amount (raw: ${raw_send})`);
+    }
+    let block: BlockNoSignature = {
+      type: "state",
+      account: this.address,
+      previous,
+      representative,
+      balance: new_balance.toString() as `${number}`, //you gotta trust me here typescript
+      //link is public key of account to send to
+      link: pub_receive,
+      link_as_account: to,
+    };
+    //
+    return "placeholder";
+  }
+  //
 
   //Double wrapped functions
+  async get_account_info(include_confirmed?: boolean, representative?: boolean, weight?: boolean, pending?: boolean): Promise<AccountInfoRPC> {
+    return await this.rpc.get_account_info(this.address, include_confirmed, representative, weight, pending);
+  }
   //
 }
 

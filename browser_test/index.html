@@ -23,9 +23,14 @@
       }
       let random_wallet = window.banani.Wallet.gen_random_wallet();
       console.log("seed", random_wallet.seed);
-      let pk = window.banani.get_private_key_from_seed(random_wallet.seed, 0);
-      console.log("privkey", pk);
-      console.log("pubkey", window.banani.get_public_key_from_private_key(pk));
+      let prk = window.banani.get_private_key_from_seed(random_wallet.seed, 0);
+      console.log("privkey", prk);
+      let puk = window.banani.get_public_key_from_private_key(prk);
+      console.log("pubkey", puk);
+      let address = window.banani.get_address_from_public_key(puk); 
+      console.log(address);
+      console.log(window.banani.get_public_key_from_address(address))
+      console.log("pubkey matches (to/from)", window.banani.get_public_key_from_address(address) === puk);
     </script>
   </body>
 </html>

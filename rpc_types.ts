@@ -1,6 +1,5 @@
-export type BananoAddress = `ban_${string}`;
-export type NanoAddress = `nano_${string}`;
-export type Address = BananoAddress | NanoAddress;
+export type AddressPrefix = "ban_" | "nano_";
+export type Address = `${AddressPrefix}${string}`;
 
 /** 32 byte block hash represented as 64 char hexadecimal */
 export type BlockHash = string;
@@ -11,7 +10,7 @@ export type BlockSubtype = BlockBasicTypes | "epoch";
 export type BlockLegacyTypes = BlockBasicTypes | "open";
 export type BlockAllTypes = BlockLegacyTypes | "state";
 
-export interface Block {
+export interface BlockNoSignature {
   type: BlockAllTypes,
   account: Address,
   previous: BlockHash,
@@ -19,6 +18,9 @@ export interface Block {
   balance: `${number}`,
   link: BlockHash,
   link_as_account: Address,
+}
+
+export interface Block extends BlockNoSignature {
   signature: string,
   work?: string,
 }

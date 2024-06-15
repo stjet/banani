@@ -8,3 +8,8 @@ The docs are hosted at https://banani.prussia.dev.
 
 Currently being written, and heavy work in progress.
 
+## Work Generation
+Though Kalium's public work will generate work for you, it is suggested that you generate your own work for the following reasons:
+- it is relatively "easy" (in terms of computation) to do
+- if Boompow goes offline (as it has done in the past), many Banano services will go down, which is not great for users and is not a very decentralized or resilient way to make your thing
+
