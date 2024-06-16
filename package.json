@@ -1,6 +1,6 @@
 {
   "name": "banani",
-  "version": "0.0.1-wip-1",
+  "version": "0.0.1-wip-3",
   "description": "JS/TS library for the Banano cryptocurrency in the style of bananopie",
   "main": "main.js",
   "scripts": {
@@ -30,7 +30,6 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "blake2b": "^2.1.4",
-    "tweetnacl": "^1.0.3"
+    "blake2b": "^2.1.4"
   }
 }

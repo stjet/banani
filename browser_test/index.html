@@ -11,6 +11,7 @@
     <p id="block-count"></p>
     <input type="number" placeholder="Whole Bananos" oninput="unit_calc(event)" />
     <p id="units"></p>
+
     <script>
       let rpc = new window.banani.RPC("https://kaliumapi.appditto.com/api");
       console.log(rpc.rpc_url);
@@ -31,6 +32,7 @@
       console.log(address);
       console.log(window.banani.get_public_key_from_address(address))
       console.log("pubkey matches (to/from)", window.banani.get_public_key_from_address(address) === puk);
+      console.log("message signature", random_wallet.sign_message("test message\ntest test"));
     </script>
   </body>
 </html>

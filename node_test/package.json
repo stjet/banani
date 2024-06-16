@@ -8,5 +8,8 @@
   "author": "",
   "license": "ISC",
   "description": "",
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "banani": "^0.0.1-wip-3"
+  }
 }

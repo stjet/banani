@@ -1,6 +1,9 @@
 import * as nacl from "./tweetnacl_mod";
 import blake2b from "blake2b";
-import type { AddressPrefix, Address } from "./rpc_types";
+import type { AddressPrefix, Address, BlockNoSignature, BlockHash } from "./rpc_types";
+
+const PREAMBLE = "0000000000000000000000000000000000000000000000000000000000000006";
+const MESSAGE_PREAMBLE = "62616E616E6F6D73672D"; //bananomsg-
 
 // byte related
 
@@ -105,6 +108,10 @@ export function base32_to_uint8array(base32: string): Uint8Array {
   return uint8array;
 }
 
+export function utf8_to_uint8array(utf8: string): Uint8Array {
+  return (new TextEncoder()).encode(utf8);
+}
+
 //
 
 // whole and raw related
@@ -172,6 +179,50 @@ export function get_public_key_from_address(address: Address): string {
   b[b.length - 1] = b[b.length - 1] * 16; //this is a bug fix
   //remove padding 0 added when encoding to address, remove trailing zero added by the code
   return uint8array_to_hex(b).slice(1, -1);
+}
+
+export function hash_block(block: BlockNoSignature): string {
+  let padded_balance = BigInt(block.balance).toString(16).toUpperCase();
+  //balance needs to be 16 bytes
+  while (padded_balance.length < 32) {
+    padded_balance = "0" + padded_balance;
+  }
+  return blake2b(32)
+    .update(hex_to_uint8array(PREAMBLE))
+    .update(hex_to_uint8array(get_public_key_from_address(block.account)))
+    .update(hex_to_uint8array(block.previous))
+    .update(hex_to_uint8array(get_public_key_from_address(block.representative)))
+    .update(hex_to_uint8array(padded_balance))
+    .update(hex_to_uint8array(block.link))
+    .digest("hex");
+}
+
+export function sign_block_hash(private_key: string, block_hash: BlockHash): string {
+  return uint8array_to_hex(nacl.sign.detached(hex_to_uint8array(block_hash), hex_to_uint8array(private_key)));
+}
+
+/** Make sure the alleged signature for a block hash is valid */
+export function verify_block_hash(public_key: string, signature: string, block_hash: BlockHash): boolean {
+  return nacl.sign.detached.verify(hex_to_uint8array(block_hash), hex_to_uint8array(signature), hex_to_uint8array(public_key));
+}
+
+/** sign message by constructing a dummy block with the message (why not just sign the message itself instead of putting it in a dummy block? ledger support). This is already the standard across Banano services and wallets which support signing so please don't invent your own scheme
+* @return {string} The signature in hex
+*/
+export function sign_message(private_key: string, message: string, preamble=MESSAGE_PREAMBLE): string {
+  //construct the dummy block
+  const dummy32 = "0".repeat(64);
+  let dummy_block: BlockNoSignature = {
+    type: "state",
+    account: get_address_from_public_key(get_public_key_from_private_key(private_key)),
+    previous: dummy32,
+    //utf8_to_uint8array not implemented
+    representative: get_address_from_public_key(uint8array_to_hex(blake2b(32).update(hex_to_uint8array(preamble)).update(utf8_to_uint8array(message)).digest())),
+    balance: "0",
+    link: dummy32,
+    link_as_account: get_address_from_public_key(dummy32),
+  };
+  return sign_block_hash(private_key, hash_block(dummy_block));
 }
 
 //
