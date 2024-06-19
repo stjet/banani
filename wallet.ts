@@ -1,5 +1,5 @@
 import * as util from "./util";
-import type { AccountInfoRPC, Address, Block, BlockNoSignature, BlockSubtype, BlockHash } from "./rpc_types";
+import type { AccountInfoRPC, AccountReceivableRPC, AccountReceivableThresholdRPC, AccountReceivableSourceRPC, Address, Block, BlockNoSignature, BlockSubtype, BlockHash } from "./rpc_types";
 import type { RPCInterface, RPC } from "./rpc";
 
 export type WorkFunction = (block_hash: BlockHash) => Promise<string>;
@@ -12,13 +12,14 @@ export class Wallet {
   index: number;
 
   try_work: boolean;
-  add_do_work: boolean = false;
+  add_do_work: boolean = true;
   work_function?: WorkFunction;
   
   /**
    * @param {string} [seed] Seed for the wallet from which private keys are derived. 64 character hex string (32 bytes)
   */
   constructor(rpc: RPCInterface, seed: string, index: number = 0, try_work: boolean = false, work_function?: WorkFunction) {
+    this.rpc = rpc;
     if (typeof seed !== "string" || seed?.length !== 64) throw Error("Seed needs to be 64 character (hex) string");
     this.seed = seed;
     this.index = index;
@@ -51,25 +52,22 @@ export class Wallet {
       json_block: "true",
       subtype,
       block,
-      do_work: (!block.work && this.add_do_work) ? "true" : undefined,
+      do_work: (!block.work && this.add_do_work) ? true : undefined,
     })).hash as BlockHash;
   }
-  //send, send_all, receive, receive_all, change_representative, sign_message_in_dummy_block
-  //todo, work = true means generate work locally
   /**
+   * @param {Address} [to] address to send to
+   * @param {util.Whole} [amount] amount in whole bananos to send
    * @param {boolean?} [gen_work] whether or not to call work function to generate work
-   * @param {string?} [previous] optionally provide a previous if you do not want to use the current frontier
    * @param {string?} [representative] optionally provide a representative if you do not want to use the current representative
-   * @param {AccountInfoRPC?} [cached_account_info]can save one rpc call in some cases. mostly for internal use 
+   * @param {AccountInfoRPC?} [cached_account_info] can save one rpc call in some cases. mostly for internal use. Make sure that in the RPC call, "representative" is "true"
+   Send Bananos
   */
-  async send(to: Address, amount: util.Whole, gen_work?: boolean, previous?: BlockHash, representative?: Address, cached_account_info?: AccountInfoRPC): Promise<BlockHash> {
-    let raw_send = util.whole_to_raw(amount);
-    let info = cached_account_info ?? await this.get_account_info(); //this should be lazy
+  async send(to: Address, amount: util.Whole, gen_work?: boolean, representative?: Address, cached_account_info?: AccountInfoRPC): Promise<BlockHash> {
+    let raw_send = util.whole_to_raw(amount, this.rpc.DECIMALS);
+    let info = cached_account_info ?? await this.get_account_info(undefined, true); //this should be lazy. the true makes sure representative is included
     let pub_receive = util.get_public_key_from_address(to);
-    let bprevious: BlockHash = previous;
-    if (!previous) bprevious = info.frontier;
-    let brepresentative = representative;
-    if (!representative) brepresentative = info.representative;
+    if (!representative) representative = info.representative;
     let before_balance = BigInt(info.balance);
     let new_balance = before_balance - raw_send;
     if (new_balance < 0n) {
@@ -78,49 +76,148 @@ export class Wallet {
     let block_ns: BlockNoSignature = {
       type: "state",
       account: this.address,
-      previous,
+      previous: info.frontier,
       representative,
       balance: new_balance.toString() as `${number}`, //you gotta trust me here typescript
       //link is public key of account to send to
       link: pub_receive,
       link_as_account: to,
     };
-    let block_hash = util.hash_block(block_ns);
+    let s_block_hash = util.hash_block(block_ns); //block hash of the send block
     let work = undefined;
-    if (gen_work) work = await this.work_function(block_hash);
-    let signature = util.sign_block_hash(this.private_key, block_hash);
+    if (gen_work) work = await this.work_function(s_block_hash);
+    let signature = util.sign_block_hash(this.private_key, s_block_hash);
     let block = { ...block_ns, signature, work };
-    return this.send_process(block, "send");
+    return await this.send_process(block, "send");
   }
-  async send_all(to: Address, work?: boolean, previous?: BlockHash, representative?: Address): Promise<BlockHash> {
-    let info = await this.get_account_info();
-    return await this.send(to, info.balance, work, previous, representative, info);
+  /* Send all Bananos */
+  async send_all(to: Address, work?: boolean, representative?: Address): Promise<BlockHash> {
+    let info = await this.get_account_info(undefined, true);
+    return await this.send(to, util.raw_to_whole(BigInt(info.balance), this.rpc.DECIMALS), work, representative, info);
   }
-  /*
-  async receive(block_hash: string, work?: boolean, previous?: BlockHash, representative?: Address): Promise<BlockHash> {
+  /**
+   * @param {BlockHash} [block_hash] send block to receive
+   * @param {boolean?} [gen_work] whether or not to call work function to generate work
+   * @param {Address?} [representative] optionally provide a representative if you do not want to use the current representative
+   receive bananos from a specific send block
+  */
+  async receive(block_hash: BlockHash, gen_work?: boolean, representative?: Address): Promise<BlockHash> {
     //doesn't matter if open or not, I think?
     let block_info = await this.rpc.get_block_info(block_hash);
-    //
+    let before_balance = 0n;
+    if (!representative) representative = this.address;
+    let previous;
+    try {
+      let info = await this.get_account_info(undefined, true);
+      previous = info.frontier;
+      representative = info.representative;
+      before_balance = BigInt(info.balance);
+    } catch (e) {
+      //todo, check if error message is "Account not found"
+      //console.log(e)
+      //unopened account probably
+      previous = "0".repeat(64);
+    }
+    let block_ns: BlockNoSignature = {
+      type: "state",
+      account: this.address,
+      previous,
+      representative,
+      balance: ((before_balance + BigInt(block_info.amount)).toString() as `${number}`),
+      //link is hash of send block
+      link: block_hash,
+    };
+    let r_block_hash = util.hash_block(block_ns); //block hash of the receive block
+    let work = undefined;
+    if (gen_work) work = await this.work_function(r_block_hash);
+    let signature = util.sign_block_hash(this.private_key, r_block_hash);
+    let block = { ...block_ns, signature, work };
+    return await this.send_process(block, "receive");
   }
-  async receive_all(): Promise<BlockHash[]> {
-    //
-  }
-  async change_representative(new_rep: Address, work?: boolean, previous?: BlockHash): Promise<BlockHash> {
-    //
-  }
+  //todo: might have some error with multiple receives?
+  /**
+   * @param {number} [count=20] Max amount of blocks to receive
+   receive all (up to count and exceeding threshold if applicable) receivable blocks
+   * @param {`${number}`?} [threshold] Min amount of Banano to receive in whole
+   * @param {boolean?} [gen_work] whether or not to call work function to generate work
+   Receive all receivable transactions (up to count, and over threshold
   */
-  /* alias for change_representative */
-  /*
-  async change_rep(new_rep: Address, work?: boolean, previous?: BlockHash): Promise<BlockHash> {
-    return await this.change_representative(new_rep, work, previous);
+  async receive_all(count: number = 20, threshold?: `${number}`, gen_work?: boolean): Promise<BlockHash[]> {
+    let to_receive = (await this.get_account_receivable(count, threshold, true) as AccountReceivableSourceRPC).blocks;
+    let previous, representative, before_balance;
+    try {
+      let info = await this.get_account_info(undefined, true);
+      previous = info.frontier;
+      representative = info.representative;
+      before_balance = BigInt(info.balance);
+    } catch (e) {
+      //todo, check if error message is "Account not found"
+      //console.log(e)
+      //unopened account probably
+      previous = "0".repeat(64);
+      representative = this.address;
+      before_balance = BigInt(0);
+    }
+    let receive_block_hashes: BlockHash[] = [];
+    for (const receive_hash of Object.keys(to_receive)) {
+      let new_balance = (before_balance + BigInt(to_receive[receive_hash].amount)).toString() as `${number}`;
+      let block_ns: BlockNoSignature = {
+        type: "state",
+        account: this.address,
+        previous,
+        representative,
+        balance: new_balance,
+        //link is hash of send block
+        link: receive_hash,
+      };
+      let r_block_hash = util.hash_block(block_ns); //block hash of the receive block
+      let work = undefined;
+      if (gen_work) work = await this.work_function(r_block_hash);
+      let signature = util.sign_block_hash(this.private_key, r_block_hash);
+      let block = { ...block_ns, signature, work };
+      await this.send_process(block, "receive")
+      receive_block_hashes.push(r_block_hash);
+      previous = r_block_hash;
+      before_balance = BigInt(new_balance);
+    }
+    return receive_block_hashes;
   }
+  /**
+   * @param {Address} [new_representative] banano address to change representative to
+   * @param {boolean?} [gen_work] whether or not to call work function to generate work
   */
+  async change_representative(new_representative: Address, gen_work?: boolean): Promise<BlockHash> {
+    let info = await this.get_account_info();
+    let block_ns: BlockNoSignature = {
+      type: "state",
+      account: this.address,
+      previous: info.frontier,
+      representative: new_representative,
+      balance: info.balance,
+      //link is 0
+      link: "0".repeat(64),
+    };
+    let c_block_hash = util.hash_block(block_ns); //block hash of the change block
+    let work = undefined;
+    if (gen_work) work = await this.work_function(c_block_hash);
+    let signature = util.sign_block_hash(this.private_key, c_block_hash);
+    let block = { ...block_ns, signature, work };
+    return await this.send_process(block, "change");
+  }
+  /* alias for the change_representative method */
+  async change_rep(new_representative: Address, work?: boolean): Promise<BlockHash> {
+    return await this.change_representative(new_representative, work);
+  }
 
   //Double wrapped functions
   async get_account_info(include_confirmed?: boolean, representative?: boolean, weight?: boolean, pending?: boolean): Promise<AccountInfoRPC> {
     return await this.rpc.get_account_info(this.address, include_confirmed, representative, weight, pending);
   }
+  async get_account_receivable(count?: number, threshold?: `${number}`, source?: boolean): Promise<AccountReceivableRPC | AccountReceivableThresholdRPC | AccountReceivableSourceRPC> {
+    return await this.rpc.get_account_receivable(this.address, count, threshold, source);
+  }
   //
+  /* Sign a message with the current private key. Signing is a way to cryptographically prove that someone posesses a certain private key without revealing the actual private key */
   sign_message(message: string): string {
     return util.sign_message(this.private_key, message);
   }

@@ -158,7 +158,7 @@ export function raw_to_whole(raw: bigint, decimals = BANANO_DECIMALS): Whole {
 
 export function get_private_key_from_seed(seed: string, index: number): string {
   //index is 4 bytes
-  return blake2b(32).update(hex_to_uint8array(seed)).update(int_to_uint8array(index, 4)).digest("hex");
+  return blake2b(32).update(hex_to_uint8array(seed)).update(int_to_uint8array(index, 4)).digest("hex").toUpperCase();
 }
 
 export function get_public_key_from_private_key(private_key: string): string {
@@ -194,7 +194,7 @@ export function hash_block(block: BlockNoSignature): string {
     .update(hex_to_uint8array(get_public_key_from_address(block.representative)))
     .update(hex_to_uint8array(padded_balance))
     .update(hex_to_uint8array(block.link))
-    .digest("hex");
+    .digest("hex").toUpperCase();
 }
 
 export function sign_block_hash(private_key: string, block_hash: BlockHash): string {
@@ -220,7 +220,6 @@ export function sign_message(private_key: string, message: string, preamble=MESS
     representative: get_address_from_public_key(uint8array_to_hex(blake2b(32).update(hex_to_uint8array(preamble)).update(utf8_to_uint8array(message)).digest())),
     balance: "0",
     link: dummy32,
-    link_as_account: get_address_from_public_key(dummy32),
   };
   return sign_block_hash(private_key, hash_block(dummy_block));
 }

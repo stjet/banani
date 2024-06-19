@@ -17,7 +17,7 @@ export interface BlockNoSignature {
   representative: Address,
   balance: `${number}`,
   link: BlockHash,
-  link_as_account: Address,
+  link_as_account?: Address,
 }
 
 export interface Block extends BlockNoSignature {
@@ -151,6 +151,11 @@ export interface AccountWeightRPC {
 }
 
 export interface AccountReceivableRPC {
+  blocks: BlockHash[],
+}
+
+//doesn't happen if threshold is "0" for some reason. why, nano node rpc...
+export interface AccountReceivableThresholdRPC {
   blocks: Record<BlockHash, `${number}`>,
 }
 

@@ -14,7 +14,6 @@ Currently being written, and heavy work in progress.
 ## Documentation
 
 ## Contributing
-
 ```
 git clone https://github.com/stjet/banani.git
 cd banani
@@ -32,6 +31,13 @@ In most cases, you will only need to touch the typescript (`.ts`) files.
 Though Kalium's public work will generate work for you, it is suggested that you generate your own work for the following reasons:
 - it is relatively "easy" (in terms of computation) to do
 - if Boompow goes offline (as it has done in the past), many Banano services will go down, which is not great for users and is not a very decentralized or resilient way to make your thing
+
+Unrelated, do remember that Nano has harder work thresholds than Banano.
+
+## Using for Nano instead of Banano
+The main differences between Nano and Banano; or at least those relevant to a library like this, are the different amount of decimals. So, when creating a `Wallet` with banani, make sure to do `my_rpc.DECIMALS = 31` otherwise your sends will be off by two magnitudes which is bad.
+
+Also, a different preamble should be used for message signing.
 
 ## Dependencies
 Banani has two external dependencies, tweetnacl and blake2b. Blake2b probably has its own dependencies, but I haven't checked.

@@ -1,13 +1,15 @@
-import type { Address, BlockHash, BlockCountRPC, BlockInfoRPC, BlocksRPC, BlocksInfoRPC, RepresentativesRPC, RepresentativesOnlineRPC, RepresentativesOnlineWeightRPC, AccountHistoryRPC, AccountHistoryRawRPC, AccountInfoRPC, AccountBalanceRPC, AccountsBalancesRPC, AccountRepresentativeRPC, AccountsRepresentativesRPC, AccountWeightRPC, AccountReceivableRPC, AccountReceivableSourceRPC, DelegatorsRPC, DelegatorsCountRPC } from "./rpc_types";
+import type { Address, BlockHash, BlockCountRPC, BlockInfoRPC, BlocksRPC, BlocksInfoRPC, RepresentativesRPC, RepresentativesOnlineRPC, RepresentativesOnlineWeightRPC, AccountHistoryRPC, AccountHistoryRawRPC, AccountInfoRPC, AccountBalanceRPC, AccountsBalancesRPC, AccountRepresentativeRPC, AccountsRepresentativesRPC, AccountWeightRPC, AccountReceivableRPC, AccountReceivableThresholdRPC, AccountReceivableSourceRPC, DelegatorsRPC, DelegatorsCountRPC } from "./rpc_types";
+import { whole_to_raw } from "./util";
 
 /** Implement this interface if the built-in RPC class does not fit your needs. The easiest way to do this is by just extending the built-in RPC class */
 export interface RPCInterface {
   rpc_url: string,
   use_pending: boolean,
+  DECIMALS?: number,
   call(payload: Record<string, any>): Promise<Record<string, string>>,
   get_block_info(block_hash: BlockHash): Promise<BlockInfoRPC>,
   get_account_info(account: Address, include_confirmed?: boolean, representative?: boolean, weight?: boolean, pending?: boolean): Promise<AccountInfoRPC>,
-  get_account_receivable<T extends boolean>(account: Address, count?: number, threshold?: number, source?: T): Promise<T extends true ? AccountReceivableSourceRPC : AccountReceivableRPC>,
+  get_account_receivable(account: Address, count?: number, threshold?: `${number}`, source?: boolean): Promise<AccountReceivableRPC | AccountReceivableThresholdRPC | AccountReceivableSourceRPC>,
 }
 
 /** Sends RPC requests to the RPC node, also has wrappers for actions that only read the network (write actions are handled by the Wallet class) */
@@ -15,6 +17,9 @@ export class RPC implements RPCInterface {
   rpc_url: string;
 
   use_pending: boolean;
+  DECIMALS = undefined; //for nano, change to nano decimals
+
+  debug: boolean = false;
 
   /** HTTP headers to send with any RPC requests, defaults to { "Content-Type": "application/json" } */
   headers: Record<string, string> | undefined;
@@ -31,11 +36,13 @@ export class RPC implements RPCInterface {
 
   /** The function that sends the RPC POST request */
   async call(payload: Record<string, any>): Promise<Record<string, any>> {
+    if (this.debug) console.log(JSON.stringify(payload))
     const resp = await fetch(this.rpc_url, {
       method: "POST",
       headers: this.headers ?? { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
+    if (!resp.ok && this.debug) console.log(await resp.text())
     if (!resp.ok) throw Error(`Request to RPC node failed with status code ${resp.status}`);
     const resp_json = await resp.json();
     if (resp_json.error) throw Error(`RPC node response: ${resp_json.error}`);
@@ -145,14 +152,16 @@ export class RPC implements RPCInterface {
       account,
     })) as AccountWeightRPC;
   }
+  //I hate nano node rpc here. I don't want to do the conditional type thing here, so have a union
   /** Keep in mind "threshold" parameter is in raw. https://docs.nano.org/commands/rpc-protocol/#receivable */
-  async get_account_receivable<T extends boolean>(account: Address, count?: number, threshold?: number, source?: T): Promise<T extends true ? AccountReceivableSourceRPC : AccountReceivableRPC>{
+  async get_account_receivable(account: Address, count?: number, threshold?: `${number}`, source?: boolean): Promise<AccountReceivableRPC | AccountReceivableThresholdRPC | AccountReceivableSourceRPC> {
     return (await this.call({
       action: this.use_pending ? "pending" : "receivable",
       account,
       count: count ? `${count}` : undefined,
-      threshold: threshold ? `${threshold}` : undefined,
-    })) as T extends true ? AccountReceivableSourceRPC : AccountReceivableRPC;
+      threshold: threshold ? whole_to_raw(threshold, this.DECIMALS).toString() : undefined,
+      source: source ? "true" : undefined,
+    })) as AccountReceivableRPC | AccountReceivableThresholdRPC | AccountReceivableSourceRPC;
   }
   /** Keep in mind "threshold" parameter is in raw. https://docs.nano.org/commands/rpc-protocol/#delegators */
   async get_delegators(account: Address, threshold?: number, count?: number, start?: Address): Promise<DelegatorsRPC> {
