@@ -4,3 +4,4 @@ node_modules
 !banani-browser.js
 !docs/*/*.js
 .secret
+docs/CNAME
