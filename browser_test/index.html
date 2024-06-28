@@ -22,7 +22,7 @@
         const raw = window.banani.whole_to_raw(event.target.value)
         document.getElementById("units").textContent = raw + "\n" + window.banani.raw_to_whole(raw);
       }
-      let random_wallet = window.banani.Wallet.gen_random_wallet();
+      let random_wallet = window.banani.Wallet.gen_random_wallet(rpc);
       console.log("seed", random_wallet.seed);
       let prk = window.banani.get_private_key_from_seed(random_wallet.seed, 0);
       console.log("privkey", prk);

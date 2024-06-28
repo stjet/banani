@@ -1,4 +1,4 @@
-import * as banani from "../main.js"//"banani";
+import * as banani from "../main.js";//"banani";
 import * as fs from "fs";
 
 let rpc = new banani.RPC("https://kaliumapi.appditto.com/api");
@@ -7,11 +7,18 @@ console.log(rpc.rpc_url);
 
 console.log(await rpc.get_block_count())
 
+let random_wallet = banani.Wallet.gen_random_wallet(rpc);
+
+console.log("random", random_wallet.address);
+console.log("sig", random_wallet.sign_message("test message\ntest test"));
+
 let test_seed = fs.readFileSync("./.secret", "utf-8").trim();
 
 let wallet = new banani.Wallet(rpc, test_seed);
 
 let z_address = wallet.address; //0 index
+
+console.log("hist len", (await rpc.get_account_history(z_address, -1)).history.length);
 
 wallet.index = 2; //3rd account
 let t_address = wallet.address;

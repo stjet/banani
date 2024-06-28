@@ -60,7 +60,7 @@ export class Wallet {
    * @param {util.Whole} [amount] amount in whole bananos to send
    * @param {boolean?} [gen_work] whether or not to call work function to generate work
    * @param {string?} [representative] optionally provide a representative if you do not want to use the current representative
-   * @param {AccountInfoRPC?} [cached_account_info] can save one rpc call in some cases. mostly for internal use. Make sure that in the RPC call, "representative" is "true"
+   * @param {AccountInfoRPC?} [cached_account_info] can save one rpc call in some cases. Mostly for internal use. Make sure that in the RPC call, "representative" is "true"
    Send Bananos
   */
   async send(to: Address, amount: util.Whole, gen_work?: boolean, representative?: Address, cached_account_info?: AccountInfoRPC): Promise<BlockHash> {
