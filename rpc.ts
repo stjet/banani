@@ -3,13 +3,13 @@ import { whole_to_raw } from "./util";
 
 /** Implement this interface if the built-in RPC class does not fit your needs. The easiest way to do this is by just extending the built-in RPC class */
 export interface RPCInterface {
-  rpc_url: string,
-  use_pending: boolean,
-  DECIMALS?: number,
-  call(payload: Record<string, any>): Promise<Record<string, string>>,
-  get_block_info(block_hash: BlockHash): Promise<BlockInfoRPC>,
-  get_account_info(account: Address, include_confirmed?: boolean, representative?: boolean, weight?: boolean, pending?: boolean): Promise<AccountInfoRPC>,
-  get_account_receivable(account: Address, count?: number, threshold?: `${number}`, source?: boolean): Promise<AccountReceivableRPC | AccountReceivableThresholdRPC | AccountReceivableSourceRPC>,
+  rpc_url: string;
+  use_pending: boolean;
+  DECIMALS?: number;
+  call(payload: Record<string, any>): Promise<Record<string, string>>;
+  get_block_info(block_hash: BlockHash): Promise<BlockInfoRPC>;
+  get_account_info(account: Address, include_confirmed?: boolean, representative?: boolean, weight?: boolean, pending?: boolean): Promise<AccountInfoRPC>;
+  get_account_receivable(account: Address, count?: number, threshold?: `${number}`, source?: boolean): Promise<AccountReceivableRPC | AccountReceivableThresholdRPC | AccountReceivableSourceRPC>;
 }
 
 /** Sends RPC requests to the RPC node, also has wrappers for actions that only read the network (write actions are handled by the Wallet class) */
@@ -26,7 +26,7 @@ export class RPC implements RPCInterface {
 
   /**
    * @param {boolean} [use_pending = false] If true, uses "pending" instead of "receivable" in RPC action names, for compatibility with older versions of the node
-  */
+   */
   constructor(rpc_url: string, use_pending: boolean = false) {
     this.rpc_url = rpc_url;
     this.use_pending = use_pending;
@@ -36,13 +36,13 @@ export class RPC implements RPCInterface {
 
   /** The function that sends the RPC POST request */
   async call(payload: Record<string, any>): Promise<Record<string, any>> {
-    if (this.debug) console.log(JSON.stringify(payload))
+    if (this.debug) console.log(JSON.stringify(payload));
     const resp = await fetch(this.rpc_url, {
       method: "POST",
       headers: this.headers ?? { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
-    if (!resp.ok && this.debug) console.log(await resp.text())
+    if (!resp.ok && this.debug) console.log(await resp.text());
     if (!resp.ok) throw Error(`Request to RPC node failed with status code ${resp.status}`);
     const resp_json = await resp.json();
     if (resp_json.error) throw Error(`RPC node response: ${resp_json.error}`);
@@ -188,7 +188,7 @@ export class RPCWithBackup extends RPC {
 
   /**
    * @param {number} [timeout] Request to RPC timeout, in milliseconds. If RPC request fails or timeouts, tries the next RPC
-  */
+   */
   constructor(rpc_urls: string[], timeout: number, use_pending: boolean = false) {
     if (rpc_urls.length < 2) throw Error("Must provide at least two RPC URLs");
     super(rpc_urls[0], use_pending);
@@ -215,4 +215,3 @@ export class RPCWithBackup extends RPC {
     }
   }
 }
-

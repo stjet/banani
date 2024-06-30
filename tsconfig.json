@@ -3,19 +3,11 @@
     "target": "es2020",
     "module": "node16",
     "moduleResolution": "node16",
-    "typeRoots": [
-      "./node_modules/@types"
-    ],
+    "typeRoots": ["./node_modules/@types"],
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "lib": [
-    "ES2020"
-  ],
-  "exclude": [
-    "node_modules",
-    ".build",
-    "browser-main.ts"
-  ]
+  "lib": ["ES2020"],
+  "exclude": ["node_modules", ".build", "browser-main.ts"]
 }

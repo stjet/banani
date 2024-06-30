@@ -2,9 +2,8 @@ import type { BlockHash } from "./rpc_types";
 import type { RPC } from "./rpc";
 
 export interface WorkProvider {
-  request_work(block_hash: BlockHash): Promise<string>,
+  request_work(block_hash: BlockHash): Promise<string>;
 }
-
 
 export class RPCWorkProvider {
   readonly rpc: RPC;
@@ -17,13 +16,14 @@ export class RPCWorkProvider {
   }
 
   async request_work(block_hash: BlockHash): Promise<string> {
-    return (await this.rpc.call({
-      action: "work_generate",
-      hash: block_hash,
-      ...this.extra_payload,
-    })).work;
+    return (
+      await this.rpc.call({
+        action: "work_generate",
+        hash: block_hash,
+        ...this.extra_payload,
+      })
+    ).work;
   }
 }
 
 //
-

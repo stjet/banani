@@ -5,4 +5,3 @@ import * as work from "./work";
 
 //for browsers or whatever
 window.banani = { ...util, ...rpc, ...wallet, ...work };
-

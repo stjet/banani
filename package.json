@@ -5,10 +5,12 @@
   "main": "main.js",
   "scripts": {
     "compile": "tsc -p .",
-    "docs": "typedoc --name banani --entryPoints ./main.ts",
+    "prettier": "prettier . --write",
+    "docs": "typedoc --name banani --entryPoints ./main.ts && node --eval \"require('fs').writeFileSync('./docs/CNAME', 'banani.prussia.dev')\"",
     "browser": "esbuild browser-main.ts --bundle --minify --keep-names --drop-labels=NODE --outfile=banani-browser.js",
-    "build": "npm run compile && npm run docs && npm run browser",
-    "cryptodiff": "diff tweetnacl_og.js tweetnacl_mod.js"
+    "build": "npm run prettier && npm run compile && npm run docs && npm run browser",
+    "cryptodiff": "diff tweetnacl_og.js tweetnacl_mod.js",
+    "diff": "git diff --cached -- *.{ts,md,json} 'browser_test/index.html' 'node_test/index.js'"
   },
   "repository": {
     "type": "git",
@@ -26,6 +28,7 @@
   "homepage": "https://github.com/stjet/banani#readme",
   "devDependencies": {
     "esbuild": "^0.21.4",
+    "prettier": "3.3.2",
     "typedoc": "^0.25.13",
     "typescript": "^5.4.5"
   },

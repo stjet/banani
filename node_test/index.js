@@ -1,11 +1,12 @@
-import * as banani from "../main.js";//"banani";
+//import * as banani from "../main.js"
+import * as banani from "banani";
 import * as fs from "fs";
 
 let rpc = new banani.RPC("https://kaliumapi.appditto.com/api");
 //rpc.debug = true
 console.log(rpc.rpc_url);
 
-console.log(await rpc.get_block_count())
+console.log(await rpc.get_block_count());
 
 let random_wallet = banani.Wallet.gen_random_wallet(rpc);
 
@@ -42,4 +43,3 @@ console.log(await wallet.receive_all());
 await wallet.change_rep("ban_3p3sp1ynb5i3qxmqoha3pt79hyk8gxhtr58tk51qctwyyik6hy4dbbqbanan");
 
 //
-

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <meta charset="utf-8" />
@@ -19,7 +19,7 @@
         document.getElementById("block-count").textContent = JSON.stringify(await rpc.get_block_count());
       })();
       function unit_calc(event) {
-        const raw = window.banani.whole_to_raw(event.target.value)
+        const raw = window.banani.whole_to_raw(event.target.value);
         document.getElementById("units").textContent = raw + "\n" + window.banani.raw_to_whole(raw);
       }
       let random_wallet = window.banani.Wallet.gen_random_wallet(rpc);
@@ -28,9 +28,9 @@
       console.log("privkey", prk);
       let puk = window.banani.get_public_key_from_private_key(prk);
       console.log("pubkey", puk);
-      let address = window.banani.get_address_from_public_key(puk); 
+      let address = window.banani.get_address_from_public_key(puk);
       console.log(address);
-      console.log(window.banani.get_public_key_from_address(address))
+      console.log(window.banani.get_public_key_from_address(address));
       console.log("pubkey matches (to/from)", window.banani.get_public_key_from_address(address) === puk);
       console.log("message signature", random_wallet.sign_message("test message\ntest test"));
     </script>
