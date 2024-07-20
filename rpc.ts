@@ -193,6 +193,7 @@ export class RPCWithBackup extends RPC {
     if (rpc_urls.length < 2) throw Error("Must provide at least two RPC URLs");
     super(rpc_urls[0], use_pending);
     this.rpc_urls = rpc_urls;
+    this.timeout = timeout;
   }
   async call(payload: Record<string, any>): Promise<Record<string, any>> {
     let i = 0;

@@ -1,6 +1,10 @@
-//import * as banani from "../main.js"
+//import * as banani from "../main.js";
 import * as banani from "banani";
 import * as fs from "fs";
+
+let rpc_backup = new banani.RPCWithBackup(["https://doesnotexist239932093293854758.com", "https://kaliumapi.appditto.com/api"], 3000);
+
+console.log(await rpc_backup.get_block_count());
 
 let rpc = new banani.RPC("https://kaliumapi.appditto.com/api");
 //rpc.debug = true
@@ -9,8 +13,9 @@ console.log(rpc.rpc_url);
 console.log(await rpc.get_block_count());
 
 let random_wallet = banani.Wallet.gen_random_wallet(rpc);
+let private_key_account = new banani.PrivateKeyAccount(rpc, random_wallet.private_key);
 
-console.log("random", random_wallet.address);
+console.log("random", random_wallet.address, random_wallet.address === private_key_account.address);
 console.log("sig", random_wallet.sign_message("test message\ntest test"));
 
 let test_seed = fs.readFileSync("./.secret", "utf-8").trim();
@@ -41,5 +46,3 @@ console.log("receive 2");
 console.log(await wallet.receive_all());
 
 await wallet.change_rep("ban_3p3sp1ynb5i3qxmqoha3pt79hyk8gxhtr58tk51qctwyyik6hy4dbbqbanan");
-
-//

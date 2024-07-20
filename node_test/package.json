@@ -10,6 +10,6 @@
   "description": "",
   "type": "module",
   "dependencies": {
-    "banani": "^1.0.0"
+    "banani": "^1.0.1"
   }
 }

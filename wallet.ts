@@ -4,21 +4,20 @@ import type { RPCInterface, RPC } from "./rpc";
 
 export type WorkFunction = (block_hash: BlockHash) => Promise<string>;
 
-/** Wallets are created from seeds, so they can have multiple addresses by changing the index. Use Wallets to "write" (send, receive, change rep) to the network */
+/** wallets are created from seeds, so they can have multiple addresses by changing the index. use wallets to "write" (send, receive, change rep) to the network */
 export class Wallet {
   readonly seed: string;
   readonly rpc: RPCInterface;
   /** Seed index. Seeds can have multiple private keys and addresses */
   index: number;
 
-  try_work: boolean;
   add_do_work: boolean = true;
   work_function?: WorkFunction;
 
   /**
    * @param {string} [seed] Seed for the wallet from which private keys are derived. 64 character hex string (32 bytes)
    */
-  constructor(rpc: RPCInterface, seed: string, index: number = 0, try_work: boolean = false, work_function?: WorkFunction) {
+  constructor(rpc: RPCInterface, seed: string, index: number = 0, work_function?: WorkFunction) {
     this.rpc = rpc;
     if (typeof seed !== "string" || seed?.length !== 64) throw Error("Seed needs to be 64 character (hex) string");
     this.seed = seed;
@@ -222,5 +221,21 @@ export class Wallet {
   /* Sign a message with the current private key. Signing is a way to cryptographically prove that someone posesses a certain private key without revealing the actual private key */
   sign_message(message: string): string {
     return util.sign_message(this.private_key, message);
+  }
+}
+
+/** Does everything a `Wallet` can do, except a private key is put in instead of a seed, and so limited to one address. Means changing `.index` will not do anything obviously. */
+export class PrivateKeyAccount extends Wallet {
+  _private_key: string;
+  /**
+   * @param {string} [private_key] Private key. 64 character hex string (32 bytes)
+   */
+  constructor(rpc: RPCInterface, private_key: string, work_function?: WorkFunction) {
+    if (typeof private_key !== "string" || private_key?.length !== 64) throw Error("Priv key needs to be 64 character (hex) string");
+    super(rpc, private_key, 0, work_function);
+    this._private_key = private_key;
+  }
+  get private_key(): string {
+    return this._private_key;
   }
 }
