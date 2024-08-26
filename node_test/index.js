@@ -1,5 +1,5 @@
-//import * as banani from "../main.js";
-import * as banani from "banani";
+import * as banani from "../main.js";
+//import * as banani from "banani";
 import * as fs from "fs";
 
 let rpc_backup = new banani.RPCWithBackup(["https://doesnotexist239932093293854758.com", "https://kaliumapi.appditto.com/api"], 3000);
@@ -16,22 +16,32 @@ let random_wallet = banani.Wallet.gen_random_wallet(rpc);
 let private_key_account = new banani.PrivateKeyAccount(rpc, random_wallet.private_key);
 
 console.log("random", random_wallet.address, random_wallet.address === private_key_account.address);
-console.log("sig", random_wallet.sign_message("test message\ntest test"));
 
-let test_seed = fs.readFileSync("./.secret", "utf-8").trim();
+const TEST_MESSAGE = "test message\ntest test";
+
+const sig = random_wallet.sign_message(TEST_MESSAGE);
+console.log("sig", sig);
+console.log("sig verify 1", banani.verify_signed_message(random_wallet.address, TEST_MESSAGE, sig));
+console.log("sig verify 2 (should be false)", banani.verify_signed_message(banani.Wallet.gen_random_wallet(rpc).address, TEST_MESSAGE, sig));
+
+console.log("verify block hash test", banani.verify_block_hash(banani.get_public_key_from_address("ban_1d59mzcc7yyuixyzc7femupc76yjsuoko79mm7y8td461opcpgiphjxjcje7"), "F5F4EBEC4DA188FD1C8F3848D5D7140E135D8DE79C4523148E70A737730740D370D67A9570DF91E6AC946D0DE81830F3144FE4192528A0D5A7283EF06B316505", "26722EF85256481A358A538D6D0EDA1B8B8F337AD4F9CB58C41BBC44949FDA21"));
+
+const test_seed = fs.readFileSync("./.secret", "utf-8").trim();
 
 let wallet = new banani.Wallet(rpc, test_seed);
 
-let z_address = wallet.address; //0 index
+const z_address = wallet.address; //0 index
 
 console.log("hist len", (await rpc.get_account_history(z_address, -1)).history.length);
 
+console.log("sig 2", wallet.sign_message(TEST_MESSAGE));
+
 wallet.index = 2; //3rd account
-let t_address = wallet.address;
+const t_address = wallet.address;
 console.log(wallet.address);
 //console.log(await wallet.receive("03EEE28C2CB5CA0552BF31A60A797929920FDE044B5E021B8CEC16F57278F79A"));
 console.log("send 1");
-let send_hash = await wallet.send(z_address, "1.001");
+const send_hash = await wallet.send(z_address, "1.001");
 
 wallet.index = 0;
 console.log("receive 1");

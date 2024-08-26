@@ -5,6 +5,8 @@ import type { AddressPrefix, Address, BlockNoSignature, BlockHash } from "./rpc_
 const PREAMBLE = "0000000000000000000000000000000000000000000000000000000000000006";
 const MESSAGE_PREAMBLE = "62616E616E6F6D73672D"; //bananomsg-
 
+//random fun fact! signatures do not need to be deterministic, they can have a bit of random in them. learned this from flutter_nano_ffi
+
 // byte related
 
 const HEX_CHARS = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"];
@@ -211,22 +213,33 @@ export function verify_block_hash(public_key: string, signature: string, block_h
   return nacl.sign.detached.verify(hex_to_uint8array(block_hash), hex_to_uint8array(signature), hex_to_uint8array(public_key));
 }
 
-/** sign message by constructing a dummy block with the message (why not just sign the message itself instead of putting it in a dummy block? ledger support). This is already the standard across Banano services and wallets which support signing so please don't invent your own scheme
- * @return {string} The signature in hex
- */
-export function sign_message(private_key: string, message: string, preamble = MESSAGE_PREAMBLE): string {
+/** For use in `sign_message` and `verify_signed_message` */
+export function construct_message_block_and_hash(address: Address, message: string, preamble = MESSAGE_PREAMBLE): string {
   //construct the dummy block
   const dummy32 = "0".repeat(64);
   const dummy_block: BlockNoSignature = {
     type: "state",
-    account: get_address_from_public_key(get_public_key_from_private_key(private_key)),
+    account: address,
     previous: dummy32,
     //utf8_to_uint8array not implemented
     representative: get_address_from_public_key(uint8array_to_hex(blake2b(32).update(hex_to_uint8array(preamble)).update(utf8_to_uint8array(message)).digest())),
     balance: "0",
     link: dummy32,
   };
-  return sign_block_hash(private_key, hash_block(dummy_block));
+  //return the hash
+  return hash_block(dummy_block);
 }
 
-//
+/** Sign message by constructing a dummy block with the message (why not just sign the message itself instead of putting it in a dummy block? ledger support). This is already the standard across Banano services and wallets which support signing so please don't invent your own scheme
+ * @return {string} The signature in hex
+ */
+export function sign_message(private_key: string, message: string, preamble = MESSAGE_PREAMBLE): string {
+  return sign_block_hash(private_key, construct_message_block_and_hash(get_address_from_public_key(get_public_key_from_private_key(private_key)), message, preamble));
+}
+
+/** Use to verify message signatures. A wrapper for `verify_block_hash`
+ * @return {boolean} Whether the message signature was actually signed by that address
+ */
+export function verify_signed_message(address: Address, message: string, signature: string, preamble = MESSAGE_PREAMBLE): boolean {
+  return verify_block_hash(get_public_key_from_address(address), signature, construct_message_block_and_hash(address, message, preamble));
+}
