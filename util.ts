@@ -176,7 +176,7 @@ export function get_address_from_public_key(public_key: string, prefix: AddressP
   const encoded = uint8array_to_base32(hex_to_uint8array(`0${public_key}`));
   //skip byte length assertions
   const hashed = uint8array_to_base32(blake2b(5, null, null, null, true).update(hex_to_uint8array(public_key)).digest().reverse());
-  return `ban_${encoded}${hashed}`;
+  return `ban_${encoded}${hashed}` as Address; //fix for old versions of typescript or something
 }
 
 export function get_public_key_from_address(address: Address): string {

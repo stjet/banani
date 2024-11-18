@@ -88,22 +88,22 @@ export class RPC implements RPCInterface {
   async get_representatives_online<T extends boolean>(weight?: T): Promise<T extends true ? RepresentativesOnlineWeightRPC : RepresentativesOnlineRPC> {
     return (await this.call({
       action: "representatives_online",
-      weight: weight ? "true" : undefined, //better not to include "weight" if false, rather than sending "weight": false
+      weight: weight ? true : undefined, //better not to include "weight" if false, rather than sending "weight": false
     })) as Promise<T extends true ? RepresentativesOnlineWeightRPC : RepresentativesOnlineRPC>;
   }
 
   //Account information related
 
   /** https://docs.nano.org/commands/rpc-protocol/#account_history */
-  async get_account_history<T extends boolean>(account: Address, count: number, raw?: boolean, head?: BlockHash, offset?: number, reverse?: boolean, account_filter?: Address[]): Promise<T extends true ? AccountHistoryRawRPC : AccountHistoryRPC> {
+  async get_account_history<T extends boolean>(account: Address, count: number, raw?: T, head?: BlockHash, offset?: number, reverse?: boolean, account_filter?: Address[]): Promise<T extends true ? AccountHistoryRawRPC : AccountHistoryRPC> {
     return (await this.call({
       action: "account_history",
       account,
       count: `${count}`,
-      raw: raw ? "true" : undefined,
+      raw: raw ? true : undefined,
       head,
       offset: offset ? `${offset}` : undefined,
-      reverse: reverse ? "true" : undefined,
+      reverse: reverse ? true : undefined,
       account_filter,
     })) as Promise<T extends true ? AccountHistoryRawRPC : AccountHistoryRPC>;
   }
@@ -112,9 +112,10 @@ export class RPC implements RPCInterface {
     return (await this.call({
       action: "account_info",
       account,
-      representative: representative ? "true" : undefined,
-      weight: weight ? "true" : undefined,
-      pending: pending ? "true" : undefined,
+      include_confirmed: include_confirmed ? true : undefined,
+      representative: representative ? true : undefined,
+      weight: weight ? true : undefined,
+      pending: pending ? true : undefined,
     })) as AccountInfoRPC;
   }
   /** https://docs.nano.org/commands/rpc-protocol/#account_balance */
@@ -160,7 +161,7 @@ export class RPC implements RPCInterface {
       account,
       count: count ? `${count}` : undefined,
       threshold: threshold ? whole_to_raw(threshold, this.DECIMALS).toString() : undefined,
-      source: source ? "true" : undefined,
+      source: source ? true : undefined,
     })) as AccountReceivableRPC | AccountReceivableThresholdRPC | AccountReceivableSourceRPC;
   }
   /** Keep in mind "threshold" parameter is in raw. https://docs.nano.org/commands/rpc-protocol/#delegators */
@@ -203,7 +204,7 @@ export class RPCWithBackup extends RPC {
           method: "POST",
           headers: this.headers ?? { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(this.timeout),
+          signal: (AbortSignal as any).timeout(this.timeout), //for old typescript versions
         });
         if (!resp.ok) throw Error(`Request to RPC node failed with status code ${resp.status}`);
         const resp_json = await resp.json();
