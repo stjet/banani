@@ -85,7 +85,7 @@ Unrelated, do remember that Nano has harder work thresholds than Banano.
 
 ## Using for Nano instead of Banano
 
-The main differences between Nano and Banano; or at least those relevant to a library like this, are the different amount of decimals. So, when creating a `Wallet` with banani, make sure to do `my_rpc.DECIMALS = 31` otherwise your sends will be off by two magnitudes which is bad.
+The main differences between Nano and Banano; or at least those relevant to a library like this, are the different amount of decimals. So, when creating a `Wallet` with banani, make sure to do `rpc.DECIMALS = banani.NANO_DECIMALS` otherwise your sends will be off by two magnitudes which is bad.
 
 Also, a different preamble should be used for message signing.
 
