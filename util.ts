@@ -1,3 +1,4 @@
+// @ts-ignore
 import * as nacl from "./tweetnacl_mod";
 import blake2b from "blake2b";
 import type { AddressPrefix, Address, BlockNoSignature, BlockHash } from "./rpc_types";
@@ -122,7 +123,7 @@ export function utf8_to_uint8array(utf8: string): Uint8Array {
 
 const BANANO_DECIMALS: number = 29;
 /** Do `rpc.DECIMALS = banani.NANO_DECIMALS` if using Nano. Putting the wrong amount of decimals in may result in LOSS OF FUNDS. */
-const NANO_DECIMALS: number = 30;
+export const NANO_DECIMALS: number = 30;
 
 /** Does NOT mean whole number, can be decimal like "4.2001". Use instead of regular number since those lose precision when decimal */
 export type Whole = `${number}`; //number can include non-base-10 formats... but whatever, we can assume users will pass in only base-10 because they are normal for the most part
@@ -175,7 +176,7 @@ export function get_address_from_public_key(public_key: string, prefix: AddressP
   //the previously mentioned padding the front with 4 bits
   const encoded = uint8array_to_base32(hex_to_uint8array(`0${public_key}`));
   //skip byte length assertions
-  const hashed = uint8array_to_base32(blake2b(5, null, null, null, true).update(hex_to_uint8array(public_key)).digest().reverse());
+  const hashed = uint8array_to_base32(blake2b(5, undefined, undefined, undefined, true).update(hex_to_uint8array(public_key)).digest().reverse());
   return `ban_${encoded}${hashed}` as Address; //fix for old versions of typescript or something
 }
 

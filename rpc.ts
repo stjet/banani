@@ -212,7 +212,8 @@ export class RPCWithBackup extends RPC {
         return resp_json;
       } catch (e) {
         //increment (so try next RPC in provided list), if all RPCs exhausted (all failed), throw error
-        if (!this.rpc_urls[++i]) throw Error(e);
+        //typescript says e might not inherit from Error which is technically true, but in this case it always will be
+        if (!this.rpc_urls[++i]) throw Error(e instanceof Error ? e.toString() : "RPC call error");
       }
     }
   }

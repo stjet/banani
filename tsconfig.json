@@ -6,7 +6,9 @@
     "typeRoots": ["./node_modules/@types"],
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "noUnusedLocals": true
   },
   "lib": ["ES2020"],
   "exclude": ["node_modules", ".build", "browser-main.ts"]

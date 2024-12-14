@@ -1,6 +1,6 @@
 import * as util from "./util";
 import type { AccountInfoRPC, AccountReceivableRPC, AccountReceivableThresholdRPC, AccountReceivableSourceRPC, Address, Block, BlockNoSignature, BlockSubtype, BlockHash } from "./rpc_types";
-import type { RPCInterface, RPC } from "./rpc";
+import type { RPCInterface } from "./rpc";
 
 export type WorkFunction = (block_hash: BlockHash) => Promise<string>;
 
@@ -68,7 +68,10 @@ export class Wallet {
     const raw_send = util.whole_to_raw(amount, this.rpc.DECIMALS);
     const info = cached_account_info ?? (await this.get_account_info(undefined, true)); //this should be lazy. the true makes sure representative is included
     const pub_receive = util.get_public_key_from_address(to);
-    if (!representative) representative = info.representative;
+    if (representative === undefined) {
+      if (info.representative === undefined) throw Error("Missing field 'representative' in `cached_account_info`");
+      representative = info.representative;
+    }
     const before_balance = BigInt(info.balance);
     const new_balance = before_balance - raw_send;
     if (new_balance < 0n) {
@@ -86,7 +89,7 @@ export class Wallet {
     };
     const s_block_hash = util.hash_block(block_ns); //block hash of the send block
     let work = undefined;
-    if (gen_work) work = await this.work_function(s_block_hash);
+    if (gen_work && this.work_function) work = await this.work_function(s_block_hash);
     const signature = util.sign_block_hash(this.private_key, s_block_hash);
     const block = { ...block_ns, signature, work };
     return await this.send_process(block, "send");
@@ -106,12 +109,11 @@ export class Wallet {
     //doesn't matter if open or not, I think?
     const block_info = await this.rpc.get_block_info(block_hash);
     let before_balance = 0n;
-    if (!representative) representative = this.address;
     let previous;
     try {
       const info = await this.get_account_info(undefined, true);
       previous = info.frontier;
-      representative = info.representative;
+      if (!representative) representative = info.representative;
       before_balance = BigInt(info.balance);
     } catch (e) {
       //todo, check if error message is "Account not found"
@@ -119,18 +121,19 @@ export class Wallet {
       //unopened account probably
       previous = "0".repeat(64);
     }
+    if (representative === undefined) representative = this.address;
     const block_ns: BlockNoSignature = {
       type: "state",
       account: this.address,
       previous,
       representative,
-      balance: (before_balance + BigInt(block_info.amount)).toString() as `${number}`,
+      balance: ((before_balance + BigInt(block_info.amount)).toString() as `${number}`),
       //link is hash of send block
       link: block_hash,
     };
     const r_block_hash = util.hash_block(block_ns); //block hash of the receive block
     let work = undefined;
-    if (gen_work) work = await this.work_function(r_block_hash);
+    if (gen_work && this.work_function) work = await this.work_function(r_block_hash);
     const signature = util.sign_block_hash(this.private_key, r_block_hash);
     const block = { ...block_ns, signature, work };
     return await this.send_process(block, "receive");
@@ -156,9 +159,9 @@ export class Wallet {
       //console.log(e)
       //unopened account probably
       previous = "0".repeat(64);
-      representative = this.address;
       before_balance = BigInt(0);
     }
+    if (representative === undefined) representative = this.address;
     let receive_block_hashes: BlockHash[] = [];
     for (const receive_hash of Object.keys(to_receive)) {
       const new_balance = (before_balance + BigInt(to_receive[receive_hash].amount)).toString() as `${number}`;
@@ -173,7 +176,7 @@ export class Wallet {
       };
       const r_block_hash = util.hash_block(block_ns); //block hash of the receive block
       let work = undefined;
-      if (gen_work) work = await this.work_function(r_block_hash);
+      if (gen_work && this.work_function) work = await this.work_function(r_block_hash);
       const signature = util.sign_block_hash(this.private_key, r_block_hash);
       const block = { ...block_ns, signature, work };
       await this.send_process(block, "receive");
@@ -200,7 +203,7 @@ export class Wallet {
     };
     const c_block_hash = util.hash_block(block_ns); //block hash of the change block
     let work = undefined;
-    if (gen_work) work = await this.work_function(c_block_hash);
+    if (gen_work && this.work_function) work = await this.work_function(c_block_hash);
     const signature = util.sign_block_hash(this.private_key, c_block_hash);
     const block = { ...block_ns, signature, work };
     return await this.send_process(block, "change");
