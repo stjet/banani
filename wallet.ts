@@ -127,6 +127,7 @@ export class Wallet {
       account: this.address,
       previous,
       representative,
+      // prettier-ignore
       balance: ((before_balance + BigInt(block_info.amount)).toString() as `${number}`),
       //link is hash of send block
       link: block_hash,
