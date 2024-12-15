@@ -89,7 +89,7 @@ export class Wallet {
     };
     const s_block_hash = util.hash_block(block_ns); //block hash of the send block
     let work = undefined;
-    if (gen_work && this.work_function) work = await this.work_function(s_block_hash);
+    if (gen_work && this.work_function) work = await this.work_function(info.frontier);
     const signature = util.sign_block_hash(this.private_key, s_block_hash);
     const block = { ...block_ns, signature, work };
     return await this.send_process(block, "send");
@@ -134,7 +134,7 @@ export class Wallet {
     };
     const r_block_hash = util.hash_block(block_ns); //block hash of the receive block
     let work = undefined;
-    if (gen_work && this.work_function) work = await this.work_function(r_block_hash);
+    if (gen_work && this.work_function) work = await this.work_function(previous === "0".repeat(64) ? this.public_key : previous);
     const signature = util.sign_block_hash(this.private_key, r_block_hash);
     const block = { ...block_ns, signature, work };
     return await this.send_process(block, "receive");
@@ -177,7 +177,7 @@ export class Wallet {
       };
       const r_block_hash = util.hash_block(block_ns); //block hash of the receive block
       let work = undefined;
-      if (gen_work && this.work_function) work = await this.work_function(r_block_hash);
+      if (gen_work && this.work_function) work = await this.work_function(previous === "0".repeat(64) ? this.public_key : previous);
       const signature = util.sign_block_hash(this.private_key, r_block_hash);
       const block = { ...block_ns, signature, work };
       await this.send_process(block, "receive");
@@ -204,7 +204,7 @@ export class Wallet {
     };
     const c_block_hash = util.hash_block(block_ns); //block hash of the change block
     let work = undefined;
-    if (gen_work && this.work_function) work = await this.work_function(c_block_hash);
+    if (gen_work && this.work_function) work = await this.work_function(info.frontier);
     const signature = util.sign_block_hash(this.private_key, c_block_hash);
     const block = { ...block_ns, signature, work };
     return await this.send_process(block, "change");
