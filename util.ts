@@ -154,8 +154,10 @@ export function raw_to_whole(raw: bigint, decimals = BANANO_DECIMALS): Whole {
   //truncate any extra zeroes
   const cl: number = whole_string.length;
   for (let c = 0; c < cl; c++) {
-    if (whole_string.slice(-1) === "0" || whole_string.slice(-1) === ".") {
+    let dot = whole_string.slice(-1) === ".";
+    if (whole_string.slice(-1) === "0" || dot) {
       whole_string = whole_string.slice(0, -1);
+      if (dot) break;
     }
   }
   return whole_string as Whole;
