@@ -35,7 +35,7 @@ export class RPC implements RPCInterface {
   //Network information related
 
   /** The function that sends the RPC POST request */
-  async call(payload: Record<string, any>): Promise<Record<string, any>> {
+  async call<T extends Record<string, any>>(payload: Record<string, any>): Promise<T> {
     if (this.debug) console.log(JSON.stringify(payload));
     const resp = await fetch(this.rpc_url, {
       method: "POST",
