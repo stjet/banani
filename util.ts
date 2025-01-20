@@ -158,6 +158,8 @@ export function raw_to_whole(raw: bigint, decimals = BANANO_DECIMALS): Whole {
     if (whole_string.slice(-1) === "0" || dot) {
       whole_string = whole_string.slice(0, -1);
       if (dot) break;
+    } else {
+      break;
     }
   }
   return whole_string as Whole;

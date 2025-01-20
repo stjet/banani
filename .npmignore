@@ -4,3 +4,6 @@ browser_test
 docs
 .secret
 tweetnacl_og.js
+util_test.js
+.github
+.git

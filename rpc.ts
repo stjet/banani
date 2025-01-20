@@ -89,7 +89,7 @@ export class RPC implements RPCInterface {
     return (await this.call({
       action: "representatives_online",
       weight: weight ? true : undefined, //better not to include "weight" if false, rather than sending "weight": false
-    })) as Promise<T extends true ? RepresentativesOnlineWeightRPC : RepresentativesOnlineRPC>;
+    })) as T extends true ? RepresentativesOnlineWeightRPC : RepresentativesOnlineRPC;
   }
 
   //Account information related
@@ -105,7 +105,7 @@ export class RPC implements RPCInterface {
       offset: offset ? `${offset}` : undefined,
       reverse: reverse ? true : undefined,
       account_filter,
-    })) as Promise<T extends true ? AccountHistoryRawRPC : AccountHistoryRPC>;
+    })) as T extends true ? AccountHistoryRawRPC : AccountHistoryRPC;
   }
   /** https://docs.nano.org/commands/rpc-protocol/#account_info */
   async get_account_info(account: Address, include_confirmed?: boolean, representative?: boolean, weight?: boolean, pending?: boolean): Promise<AccountInfoRPC> {
@@ -189,7 +189,7 @@ export class RPC implements RPCInterface {
       raw: raw ? raw : undefined,
       address: address ? address : undefined,
       port: port ? `${port}` : undefined,
-    })) as Promise<TelemetryRPC | { metrics: TelemetryRawRPC[] } | TelemetryAddressRPC>;
+    })) as TelemetryRPC | { metrics: TelemetryRawRPC[] } | TelemetryAddressRPC;
   }
 
   /** https://docs.nano.org/commands/rpc-protocol/#version */
@@ -213,7 +213,7 @@ export class RPCWithBackup extends RPC {
     this.rpc_urls = rpc_urls;
     this.timeout = timeout;
   }
-  async call(payload: Record<string, any>): Promise<Record<string, any>> {
+  async call<T extends Record<string, any>>(payload: Record<string, any>): Promise<T> {
     let i = 0;
     while (true) {
       try {

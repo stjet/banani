@@ -1,6 +1,6 @@
 {
   "name": "banani",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "JS/TS library for the Banano cryptocurrency in the style of bananopie",
   "main": "main.js",
   "scripts": {
@@ -8,9 +8,10 @@
     "prettier": "prettier . --write",
     "docs": "typedoc --name banani --entryPoints ./main.ts && node --eval \"require('fs').writeFileSync('./docs/CNAME', 'banani.prussia.dev')\"",
     "browser": "esbuild browser-main.ts --bundle --minify --keep-names --drop-labels=NODE --outfile=banani-browser.js",
-    "build": "npm run prettier && npm run compile && npm run docs && npm run browser",
+    "build": "npm run prettier && npm run compile && npm test && npm run docs && npm run browser",
     "cryptodiff": "diff tweetnacl_og.js tweetnacl_mod.js",
-    "diff": "git diff --cached -- *.{ts,md,json} 'browser_test/index.html' 'node_test/index.js'"
+    "diff": "git diff --cached -- *.{ts,md,json} 'browser_test/index.html' 'node_test/index.js'",
+    "test": "node util_test.js"
   },
   "repository": {
     "type": "git",
