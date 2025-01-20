@@ -1,4 +1,4 @@
-import type { Address, BlockHash, BlockCountRPC, BlockInfoRPC, BlocksRPC, BlocksInfoRPC, RepresentativesRPC, RepresentativesOnlineRPC, RepresentativesOnlineWeightRPC, AccountHistoryRPC, AccountHistoryRawRPC, AccountInfoRPC, AccountBalanceRPC, AccountsBalancesRPC, AccountRepresentativeRPC, AccountsRepresentativesRPC, AccountWeightRPC, AccountReceivableRPC, AccountReceivableThresholdRPC, AccountReceivableSourceRPC, DelegatorsRPC, DelegatorsCountRPC } from "./rpc_types";
+import type { Address, BlockHash, BlockCountRPC, BlockInfoRPC, BlocksRPC, BlocksInfoRPC, RepresentativesRPC, RepresentativesOnlineRPC, RepresentativesOnlineWeightRPC, AccountHistoryRPC, AccountHistoryRawRPC, AccountInfoRPC, AccountBalanceRPC, AccountsBalancesRPC, AccountRepresentativeRPC, AccountsRepresentativesRPC, AccountWeightRPC, AccountReceivableRPC, AccountReceivableThresholdRPC, AccountReceivableSourceRPC, DelegatorsRPC, DelegatorsCountRPC, TelemetryRPC, TelemetryRawRPC, TelemetryAddressRPC, VersionRPC } from "./rpc_types";
 import { whole_to_raw } from "./util";
 
 /** Implement this interface if the built-in RPC class does not fit your needs. The easiest way to do this is by just extending the built-in RPC class */
@@ -180,6 +180,23 @@ export class RPC implements RPCInterface {
       action: "account_weight",
       account,
     })) as DelegatorsCountRPC;
+  }
+
+  /** https://docs.nano.org/commands/rpc-protocol/#telemetry */
+  async get_telemetry(raw?: boolean, address?: string, port?: number): Promise<TelemetryRPC | { metrics: TelemetryRawRPC[] } | TelemetryAddressRPC> {
+    return (await this.call({
+      action: "telemetry",
+      raw: raw ? raw : undefined,
+      address: address ? address : undefined,
+      port: port ? `${port}` : undefined,
+    })) as Promise<TelemetryRPC | { metrics: TelemetryRawRPC[] } | TelemetryAddressRPC>;
+  }
+
+  /** https://docs.nano.org/commands/rpc-protocol/#version */
+  async get_version(): Promise<VersionRPC> {
+    return (await this.call({
+      action: "version",
+    })) as VersionRPC;
   }
 }
 

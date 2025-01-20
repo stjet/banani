@@ -177,4 +177,45 @@ export interface DelegatorsCountRPC {
   count: `${number}`;
 }
 
+export interface TelemetryRPC {
+  block_count: `${number}`;
+  cemented_count: `${number}`;
+  unchecked_count: `${number}`;
+  account_count: `${number}`;
+  bandwidth_cap: `${number}`;
+  peer_count: `${number}`;
+  protocol_version: `${number}`;
+  uptime: `${number}`;
+  genesis_block: BlockHash;
+  major_version: `${number}`;
+  minor_version: `${number}`;
+  patch_version: `${number}`;
+  pre_release_version: `${number}`;
+  maker: string;
+  timestamp: `${number}`;
+  active_difficulty: `${number}`;
+  node_id: string;
+  signature: string;
+  network_identifier: string;
+}
+export interface TelemetryAddressRPC extends TelemetryRPC {
+  signature: string;
+  node_id: string;
+}
+export interface TelemetryRawRPC extends TelemetryAddressRPC {
+  address: string;
+  port: `${number}`;
+}
+
+export interface VersionRPC {
+  rpc_version: `${number}`;
+  store_version: `${number}`;
+  protocol_version: `${number}`;
+  node_vendor: string;
+  store_vendor: string;
+  network: string;
+  network_identifier: string;
+  build_info: string;
+}
+
 //
