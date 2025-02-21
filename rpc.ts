@@ -1,5 +1,4 @@
 import type { Address, BlockHash, BlockCountRPC, BlockInfoRPC, BlocksRPC, BlocksInfoRPC, RepresentativesRPC, RepresentativesOnlineRPC, RepresentativesOnlineWeightRPC, AccountHistoryRPC, AccountHistoryRawRPC, AccountInfoRPC, AccountBalanceRPC, AccountsBalancesRPC, AccountRepresentativeRPC, AccountsRepresentativesRPC, AccountWeightRPC, AccountReceivableRPC, AccountReceivableThresholdRPC, AccountReceivableSourceRPC, DelegatorsRPC, DelegatorsCountRPC, TelemetryRPC, TelemetryRawRPC, TelemetryAddressRPC, VersionRPC } from "./rpc_types";
-import { whole_to_raw } from "./util";
 
 /** Implement this interface if the built-in RPC class does not fit your needs. The easiest way to do this is by just extending the built-in RPC class */
 export interface RPCInterface {
@@ -160,16 +159,16 @@ export class RPC implements RPCInterface {
       action: this.use_pending ? "pending" : "receivable",
       account,
       count: count ? `${count}` : undefined,
-      threshold: threshold ? whole_to_raw(threshold, this.DECIMALS).toString() : undefined,
+      threshold,
       source: source ? true : undefined,
     })) as AccountReceivableRPC | AccountReceivableThresholdRPC | AccountReceivableSourceRPC;
   }
   /** Keep in mind "threshold" parameter is in raw. https://docs.nano.org/commands/rpc-protocol/#delegators */
-  async get_delegators(account: Address, threshold?: number, count?: number, start?: Address): Promise<DelegatorsRPC> {
+  async get_delegators(account: Address, threshold?: `${number}`, count?: number, start?: Address): Promise<DelegatorsRPC> {
     return (await this.call({
       action: "delegators",
       account,
-      threshold: threshold ? `${threshold}` : undefined,
+      threshold,
       count: count ? `${count}` : undefined,
       start,
     })) as DelegatorsRPC;
