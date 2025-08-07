@@ -95,7 +95,7 @@ export class Wallet {
     return await this.send_process(block, "send");
   }
   /* Send by passing in a fixed final balance */
-  async send_fixed_bal(to: Address, end_bal: util.Whole, gen_work?: boolean, representative?: Address, cached_account_info?: AccountInfoRPC): Promise<BlockHash> {
+  async send_fixed_final_bal(to: Address, end_bal: util.Whole, gen_work?: boolean, representative?: Address, cached_account_info?: AccountInfoRPC): Promise<BlockHash> {
     const raw_end = util.whole_to_raw(end_bal, this.rpc.DECIMALS);
     const info = cached_account_info ?? (await this.get_account_info(undefined, true)); //this should be lazy. the true makes sure representative is included
     const pub_receive = util.get_public_key_from_address(to);
