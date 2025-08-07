@@ -103,8 +103,7 @@ export class Wallet {
       if (info.representative === undefined) throw Error("Missing field 'representative' in `cached_account_info`");
       representative = info.representative;
     }
-    const new_balance = BigInt(raw_end);
-    if (new_balance < 0n) {
+    if (raw_end < 0n) {
       throw Error(`End balance cannot be negative`);
     }
     const block_ns: BlockNoSignature = {
@@ -112,7 +111,7 @@ export class Wallet {
       account: this.address,
       previous: info.frontier,
       representative,
-      balance: new_balance.toString() as `${number}`, //you gotta trust me here typescript
+      balance: raw_end.toString() as `${number}`, //you gotta trust me here typescript
       //link is public key of account to send to
       link: pub_receive,
       link_as_account: to,
