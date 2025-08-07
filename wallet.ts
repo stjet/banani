@@ -94,6 +94,35 @@ export class Wallet {
     const block = { ...block_ns, signature, work };
     return await this.send_process(block, "send");
   }
+  /* Send by passing in a fixed final balance */
+  async send_fixed_final_bal(to: Address, end_bal: util.Whole, gen_work?: boolean, representative?: Address, cached_account_info?: AccountInfoRPC): Promise<BlockHash> {
+    const raw_end = util.whole_to_raw(end_bal, this.rpc.DECIMALS);
+    const info = cached_account_info ?? (await this.get_account_info(undefined, true)); //this should be lazy. the true makes sure representative is included
+    const pub_receive = util.get_public_key_from_address(to);
+    if (representative === undefined) {
+      if (info.representative === undefined) throw Error("Missing field 'representative' in `cached_account_info`");
+      representative = info.representative;
+    }
+    if (raw_end < 0n) {
+      throw Error(`End balance cannot be negative`);
+    }
+    const block_ns: BlockNoSignature = {
+      type: "state",
+      account: this.address,
+      previous: info.frontier,
+      representative,
+      balance: raw_end.toString() as `${number}`, //you gotta trust me here typescript
+      //link is public key of account to send to
+      link: pub_receive,
+      link_as_account: to,
+    };
+    const s_block_hash = util.hash_block(block_ns); //block hash of the send block
+    let work = undefined;
+    if (gen_work && this.work_function) work = await this.work_function(info.frontier);
+    const signature = util.sign_block_hash(this.private_key, s_block_hash);
+    const block = { ...block_ns, signature, work };
+    return await this.send_process(block, "send");
+  }
   /* Send all Bananos */
   async send_all(to: Address, work?: boolean, representative?: Address): Promise<BlockHash> {
     const info = await this.get_account_info(undefined, true);

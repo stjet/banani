@@ -3,7 +3,7 @@
 > ~~how to buy banani from beatrice~~
 > how to install banani on react.js
 
-Banani is a library for the Banano cryptocurrency that will support sending, receiving, changing rep, RPC calls, message signing, wallet management, etc. It aims to be a more powerful and sensible version of @bananocoin/bananojs. Banani takes heavy inspiration from the Python [bananopie](https://github.com/stjet/bananopie) (which I also wrote), which in turn takes some inspiration from my experiences with ethers.js.
+Banani is a library for the Banano cryptocurrency that will support sending, receiving, changing rep, RPC calls, message signing, wallet management, etc. It aims to be a more powerful and sensible version of @bananocoin/bananojs. Banani takes heavy inspiration from the Python [bananopie](https://github.com/stjet/bananopie) (which I [prussia] also wrote), which in turn takes some inspiration from my experiences with ethers.js.
 
 **Please report any bugs or request features by opening an Github issue.** You can ask for help or ask questions in the #frankensteins-lab channel of the Banano discord and people will be typically be eager to assist if they can.
 
