@@ -1,8 +1,7 @@
 import * as util from "./util";
 import type { AccountInfoRPC, AccountReceivableRPC, AccountReceivableThresholdRPC, AccountReceivableSourceRPC, Address, Block, BlockNoSignature, BlockSubtype, BlockHash } from "./rpc_types";
 import type { RPCInterface } from "./rpc";
-
-export type WorkFunction = (block_hash: BlockHash) => Promise<string>;
+import type { WorkFunction } from "./work";
 
 /** wallets are created from seeds, so they can have multiple addresses by changing the index. use wallets to "write" (send, receive, change rep) to the network */
 export class Wallet {
@@ -94,7 +93,7 @@ export class Wallet {
     const block = { ...block_ns, signature, work };
     return await this.send_process(block, "send");
   }
-  /* Send by passing in a fixed final balance */
+  /** Send by passing in a fixed final balance */
   async send_fixed_final_bal(to: Address, end_bal: util.Whole, gen_work?: boolean, representative?: Address, cached_account_info?: AccountInfoRPC): Promise<BlockHash> {
     const raw_end = util.whole_to_raw(end_bal, this.rpc.DECIMALS);
     const info = cached_account_info ?? (await this.get_account_info(undefined, true)); //this should be lazy. the true makes sure representative is included

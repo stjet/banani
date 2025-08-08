@@ -26,6 +26,9 @@ console.log("sig verify 2 (should be false)", banani.verify_signed_message(banan
 
 console.log("verify block hash test", banani.verify_block_hash(banani.get_public_key_from_address("ban_1d59mzcc7yyuixyzc7femupc76yjsuoko79mm7y8td461opcpgiphjxjcje7"), "F5F4EBEC4DA188FD1C8F3848D5D7140E135D8DE79C4523148E70A737730740D370D67A9570DF91E6AC946D0DE81830F3144FE4192528A0D5A7283EF06B316505", "26722EF85256481A358A538D6D0EDA1B8B8F337AD4F9CB58C41BBC44949FDA21"));
 
+console.log("running work test (may take a while)")
+console.log("work test", (await new banani.SlowJavascriptWorkProvider().request_work("B7FBEF33567E37E04E772C473CCED4FA9245CC7A4C1BDE8A2576F7384E7919E1")) == "0000000000423B3B");
+
 const test_seed = fs.readFileSync("./.secret", "utf-8").trim();
 
 let wallet = new banani.Wallet(rpc, test_seed);
@@ -49,6 +52,8 @@ await wallet.receive(send_hash);
 console.log("send 2");
 await wallet.send(t_address, "0.1");
 console.log("send 3");
+await wallet.send_fixed_final_bal(t_address, "0.500201");
+console.log("send 4");
 await wallet.send_all(t_address);
 
 wallet.index = 2;
