@@ -1,4 +1,4 @@
-import type { Address, BlockHash, BlockCountRPC, BlockInfoRPC, BlocksRPC, BlocksInfoRPC, RepresentativesRPC, RepresentativesOnlineRPC, RepresentativesOnlineWeightRPC, AccountHistoryRPC, AccountHistoryRawRPC, AccountInfoRPC, AccountBalanceRPC, AccountsBalancesRPC, AccountRepresentativeRPC, AccountsRepresentativesRPC, AccountWeightRPC, AccountReceivableRPC, AccountReceivableThresholdRPC, AccountReceivableSourceRPC, DelegatorsRPC, DelegatorsCountRPC, TelemetryRPC, TelemetryRawRPC, TelemetryAddressRPC, VersionRPC, StatsType, StatsRPC } from "./rpc_types";
+import type { Address, BlockHash, BlockCountRPC, BlockInfoRPC, BlocksRPC, BlocksInfoRPC, RepresentativesRPC, RepresentativesOnlineRPC, RepresentativesOnlineWeightRPC, AccountHistoryRPC, AccountHistoryRawRPC, AccountInfoRPC, AccountBalanceRPC, AccountsBalancesRPC, AccountRepresentativeRPC, AccountsRepresentativesRPC, AccountWeightRPC, AccountReceivableRPC, AccountReceivableThresholdRPC, AccountReceivableSourceRPC, DelegatorsRPC, DelegatorsCountRPC, TelemetryRPC, TelemetryRawRPC, TelemetryAddressRPC, VersionRPC, StatsType, StatsRPC, ConfirmationHistoryRPC } from "./rpc_types";
 
 /** Implement this interface if the built-in RPC class does not fit your needs. The easiest way to do this is by just extending the built-in RPC class */
 export interface RPCInterface {
@@ -204,6 +204,10 @@ export class RPC implements RPCInterface {
       action: "stats",
       type,
     })) as StatsRPC<T>;
+  }
+
+  async get_confirmation_history(hash?: string): Promise<ConfirmationHistoryRPC> {
+    return (await this.call({ action: "confirmation_history" })) as ConfirmationHistoryRPC;
   }
 }
 

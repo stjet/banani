@@ -251,4 +251,33 @@ export interface StatsUnstableRPC {
 
 export type StatsRPC<T extends StatsType> = T extends "counters" ? StatsCountersRPC : T extends "samples" ? StatsSamplesRPC : T extends "objects" | "database" ? StatsUnstableRPC : never;
 
+export interface ConfirmationHistoryRPC {
+  confirmation_stats: {
+    count: `${number}`;
+    average: `${number}`;
+  };
+  confirmations:
+    | ""
+    | [
+        {
+          hash: BlockHash;
+          duration: `${number}`;
+          time: `${number}`;
+          tally: `${number}`;
+          blocks: `${number}`;
+          voters: `${number}`;
+          request_count: `${number}`;
+        },
+        {
+          hash: BlockHash;
+          duration: `${number}`;
+          time: `${number}`;
+          tally: `${number}`;
+          blocks: `${number}`;
+          voters: `${number}`;
+          request_count: `${number}`;
+        },
+      ];
+}
+
 //
