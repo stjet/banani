@@ -1,4 +1,4 @@
-import type { Address, BlockHash, BlockCountRPC, BlockInfoRPC, BlocksRPC, BlocksInfoRPC, RepresentativesRPC, RepresentativesOnlineRPC, RepresentativesOnlineWeightRPC, AccountHistoryRPC, AccountHistoryRawRPC, AccountInfoRPC, AccountBalanceRPC, AccountsBalancesRPC, AccountRepresentativeRPC, AccountsRepresentativesRPC, AccountWeightRPC, AccountReceivableRPC, AccountReceivableThresholdRPC, AccountReceivableSourceRPC, DelegatorsRPC, DelegatorsCountRPC, TelemetryRPC, TelemetryRawRPC, TelemetryAddressRPC, VersionRPC } from "./rpc_types";
+import type { Address, BlockHash, BlockCountRPC, BlockInfoRPC, BlocksRPC, BlocksInfoRPC, RepresentativesRPC, RepresentativesOnlineRPC, RepresentativesOnlineWeightRPC, AccountHistoryRPC, AccountHistoryRawRPC, AccountInfoRPC, AccountBalanceRPC, AccountsBalancesRPC, AccountRepresentativeRPC, AccountsRepresentativesRPC, AccountWeightRPC, AccountReceivableRPC, AccountReceivableThresholdRPC, AccountReceivableSourceRPC, DelegatorsRPC, DelegatorsCountRPC, TelemetryRPC, TelemetryRawRPC, TelemetryAddressRPC, VersionRPC, StatsType, StatsRPC } from "./rpc_types";
 
 /** Implement this interface if the built-in RPC class does not fit your needs. The easiest way to do this is by just extending the built-in RPC class */
 export interface RPCInterface {
@@ -196,6 +196,14 @@ export class RPC implements RPCInterface {
     return (await this.call({
       action: "version",
     })) as VersionRPC;
+  }
+
+  /** https://docs.nano.org/commands/rpc-protocol/#stats */
+  async get_stats<T extends StatsType>(type: T): Promise<StatsRPC<T>> {
+    return (await this.call({
+      action: "stats",
+      type,
+    })) as StatsRPC<T>;
   }
 }
 

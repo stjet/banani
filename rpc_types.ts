@@ -10,6 +10,8 @@ export type BlockSubtype = BlockBasicTypes | "epoch";
 export type BlockLegacyTypes = BlockBasicTypes | "open";
 export type BlockAllTypes = BlockLegacyTypes | "state";
 
+export type StatsType = "counters" | "samples" | "objects" | "database";
+
 export interface BlockNoSignature {
   type: BlockAllTypes;
   account: Address;
@@ -217,5 +219,36 @@ export interface VersionRPC {
   network_identifier: string;
   build_info: string;
 }
+
+export interface StatsCountersRPC {
+  type: "counters";
+  created: string;
+  entries: {
+    time: string;
+    type: string;
+    detail: string;
+    dir: "in" | "out";
+    value: `${number}`;
+  }[];
+}
+export interface StatsSamplesRPC {
+  type: "samples";
+  created: string;
+  entries:
+    | ""
+    | {
+        time: string;
+        type: string;
+        detail: string;
+        dir: string;
+        value: string;
+      }[];
+  stat_duration_seconds: `${number}`;
+}
+export interface StatsUnstableRPC {
+  [key: string]: string | StatsUnstableRPC;
+}
+
+export type StatsRPC<T extends StatsType> = T extends "counters" ? StatsCountersRPC : T extends "samples" ? StatsSamplesRPC : T extends "objects" | "database" ? StatsUnstableRPC : never;
 
 //
