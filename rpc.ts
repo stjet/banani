@@ -206,6 +206,7 @@ export class RPC implements RPCInterface {
     })) as StatsRPC<T>;
   }
 
+  /** https://docs.nano.org/commands/rpc-protocol/#confirmation_history */
   async get_confirmation_history(hash?: string): Promise<ConfirmationHistoryRPC> {
     return (await this.call({ action: "confirmation_history" })) as ConfirmationHistoryRPC;
   }
