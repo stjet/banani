@@ -1,6 +1,7 @@
 node_modules
 *.js
 !node_test/index.js
+node_test/package-lock.json
 !banani-browser.js
 !docs/*/*.js
 !tweetnacl*.js

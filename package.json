@@ -1,6 +1,6 @@
 {
   "name": "banani",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "JS/TS library for the Banano cryptocurrency in the style of bananopie",
   "main": "main.js",
   "scripts": {
